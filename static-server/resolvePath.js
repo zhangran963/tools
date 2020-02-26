@@ -1,3 +1,5 @@
+const path = require('path')
+
 // 截取有效字段
 let argv = process.argv.slice(2)
 // 去除每个参数中的无效内容
@@ -19,7 +21,7 @@ argv.forEach(arg => {
     port = +arg
   }else if(typeof arg === 'string'){
     // 其他类型是路径
-    pathname = arg
+    pathname = path.resolve(pathname, arg)
   }
 })
 

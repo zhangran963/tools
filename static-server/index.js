@@ -6,21 +6,35 @@ let PReadFile = promisify(fs.readFile)
 
 // 解析的 路径和端口
 const { pathname, port } = require('./resolvePath')
+/* nginx 中的try_files指令 */
+const try_files = require('./try_files')
+/* 处理Content-Type属性 */
+const ContentType = require('./content-type')
+
 
 http.createServer(async (req,res) => {
   let url = req.url
   if(url.includes('favicon.ico')){
     return res.end()
-  }else if(['/', '/index'].includes(url)){
-    url = '/index.html'
   }
-  
-  // res.setHeader('Content-Type', 'application/json; charset=utf-8')
-  url = path.join(pathname, url)
+
+  /* 适配 vue-router的history模式 */
+  /* 模仿nginx的try_files指令: try_files $uri $uri/ /index.html */
+  url = try_files(path.join(pathname, url), path.join(pathname, url, '/'), path.join(pathname, '/index.html'))
+
   try {
-    let page = await PReadFile(url, {
-      encoding: 'utf-8'
-    })
+    let options = {}
+
+    if(/\.(html|css|js|txt)$/.test(url)){
+      options.encoding = 'utf-8'
+    }
+    let page = await PReadFile(url, options)
+
+    /* 设置Content-Type */
+    let contentType = ContentType(url)
+    res.setHeader('Content-Type', contentType)
+    // console.log('* ', contentType, url)
+
     res.write(page)
     res.end()
   } catch (error) {
