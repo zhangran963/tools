@@ -92,7 +92,21 @@ module.exports = {
       let path = Path.resolve(this.path, this._filename)
       return `node ${path}`
     }
-  }
+  },
+
+  tools: {
+    excludes: [/\.json/, /\.html/],
+    condition: 'test-project',
+    path: '/Users/ran/tools',
+    set script(filename) {
+      this._filename = filename;
+    },
+    get script() {
+      let pathname = Path.resolve(this.path, this._filename);
+      pathname = pathname.replace(/\s/g, '\\ ')
+      return `node ${pathname}`
+    }
+  },
 
 }
 
